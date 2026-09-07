@@ -18,15 +18,13 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     pkg_maze = get_package_share_directory('maze_control')
-    pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
-
-    pkg_tb3_gazebo = get_package_share_directory('turtlebot3_gazebo')
+    pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')    
 
     world_file = os.path.join(pkg_maze, 'worlds', 'maze_world.sdf')
     bridge_config = os.path.join(pkg_maze, 'config', 'bridge_config.yaml')
     default_gui_config = os.path.join(pkg_maze, 'config', 'gui.config')
     tb3_burger_sdf = os.path.join(
-        pkg_tb3_gazebo, 'models', 'turtlebot3_burger', 'model.sdf'
+        pkg_maze,'sdf', 'model.sdf'
     )
 
     gui_config_arg = DeclareLaunchArgument(

@@ -86,7 +86,7 @@ class MoveXActionServer(Node):
         self.get_logger().info('Executing goal: Moving forward...')
         
         target_distance = goal_handle.request.target_distance    
-        speed = 100.0
+        speed = 0.8
         
         start_x = self.current_x
         start_y = self.current_y

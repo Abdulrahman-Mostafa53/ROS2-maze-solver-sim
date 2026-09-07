@@ -171,22 +171,12 @@ def solve_maze():
     wall_node = WallServiceClient()
     motion_node = MazeSolver()
     motion_node.move_yaw("left")
-    sleep(1.5)
-    wall_node.toggle_walls(True)
-    sleep(1.9)
-    motion_node.move_x(1.9)
-    sleep(1)
-    wall_node.toggle_walls(False)
-    sleep(1)
-    motion_node.move_yaw("right")
-    sleep(1.8)
-    motion_node.move_x(50.0)
-    sleep(10)
-    wall_node.destroy_node()
-    motion_node.destroy_node()
+    sleep(3)
+
+    
 
 def main():
     rclpy.init()
-    sleep(3.5)
+    sleep(10.5)
     solve_maze()
     rclpy.shutdown()

@@ -6,9 +6,10 @@ from rclpy.action import ActionServer
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Pose
 from maze_interfaces.action import Yaw
 from maze_interfaces.srv import Error
+from tf_transformations import euler_from_quaternion
 
 
 class MoveYawActionServer(Node):
@@ -33,11 +34,10 @@ class MoveYawActionServer(Node):
         )
 
         self.subscription = self.create_subscription(
-            Odometry,
-            '/odom',
+            Pose,
+            '/robot/ground_truth_pose',
             self.odom_callback,
             10,
-            callback_group=self.callback_group
         )
 
         self.current_yaw = 0.0
@@ -100,15 +100,10 @@ class MoveYawActionServer(Node):
         return response
 
     def odom_callback(self, msg):
-        orientation_q = msg.pose.pose.orientation
-        qx = orientation_q.x
-        qy = orientation_q.y
-        qz = orientation_q.z
-        qw = orientation_q.w
-
-        siny_cosp = 2.0 * (qw * qz + qx * qy)
-        cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz)
-        self.current_yaw = math.atan2(siny_cosp, cosy_cosp)
+        q = msg.orientation
+        quaternion = [q.x,q.y,q.z,q.w]
+        self.current_yaw = euler_from_quaternion(quaternion)[2]*(180/math.pi)
+        self.get_logger().info(f"Current yaw : {self.current_yaw}")
 
     def normalize_angle(self, angle):
         return math.atan2(math.sin(angle), math.cos(angle))
@@ -130,8 +125,8 @@ class MoveYawActionServer(Node):
         self.current_direction = direction
         self.start_yaw_goal = self.current_yaw
 
-        target_angle_rad = (math.pi / 2.0)-0.32
-        base_speed = 0.8
+        target_angle_rad = (math.pi / 2.0)
+        base_speed = 1.5
         
         if direction == 'left':
             angular_speed = base_speed
