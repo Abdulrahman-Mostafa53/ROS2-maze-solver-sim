@@ -10,6 +10,8 @@ class Pid:
         start=0
     ):
 
+        # Initializing parameters passed to the constructor
+
         self.TARGET = target
         self.KP = kp
         self.KI = ki
@@ -18,23 +20,24 @@ class Pid:
         self.controller_clamp = controller_clamp
         self.START = start
 
-
         self.current_state = start
         self.error = target - start
         self.accum_error = 0
 
     def compute(self, dt, error_dif):
 
-
         p = round(self.KP * self.error, 4)
+
         i = min(
             round(self.KI * self.accum_error, 4),
             self.anti_wind_clamp
         )
+
         d = round(
             self.KD * (error_dif / dt),
             4
         )
+
         return min(
             p + i + d,
             self.controller_clamp

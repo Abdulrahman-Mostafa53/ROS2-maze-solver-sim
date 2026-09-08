@@ -43,6 +43,15 @@ def generate_launch_description():
         executable="move_yaw_action_server",
         package="maze_solver",
         name="yaw_action_server",
+        parameters=[
+            {
+                "yaw_kp": 1.5,
+                "yaw_ki": 0.005,
+                "yaw_kd": 0.01,
+                "yaw_anti_wind_clamp": 20.0,
+                "yaw_controller_clamp": 1.0,
+            }
+        ],
     )
 
     action_client_node = Node(
