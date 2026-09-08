@@ -1,0 +1,8 @@
+{
+  "package_name": "maze_interfaces",
+  "non_idl_tuples": [
+    "/home/abdulrahman/MIA/GROUP_12/src/maze_interfaces:action/MoveX.action",
+    "/home/abdulrahman/MIA/GROUP_12/src/maze_interfaces:action/Yaw.action",
+    "/home/abdulrahman/MIA/GROUP_12/src/maze_interfaces:srv/Error.srv"
+  ]
+}

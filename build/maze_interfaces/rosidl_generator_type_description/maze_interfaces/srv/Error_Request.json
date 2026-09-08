@@ -1,0 +1,26 @@
+{
+  "type_description_msg": {
+    "type_description": {
+      "type_name": "maze_interfaces/srv/Error_Request",
+      "fields": [
+        {
+          "name": "stop",
+          "type": {
+            "type_id": 15,
+            "capacity": 0,
+            "string_capacity": 0,
+            "nested_type_name": ""
+          },
+          "default_value": ""
+        }
+      ]
+    },
+    "referenced_type_descriptions": []
+  },
+  "type_hashes": [
+    {
+      "type_name": "maze_interfaces/srv/Error_Request",
+      "hash_string": "RIHS01_52e91d608b43b4efc44a8c77b0d98a8b1e2128edb07f6930c5914c61dd2ffba3"
+    }
+  ]
+}

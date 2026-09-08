@@ -1,0 +1,15 @@
+{
+  "package_name": "maze_interfaces",
+  "output_dir": "/home/abdulrahman/MIA/GROUP_12/src/build/maze_interfaces/rosidl_generator_type_description/maze_interfaces",
+  "idl_tuples": [
+    "/home/abdulrahman/MIA/GROUP_12/src/build/maze_interfaces/rosidl_adapter/maze_interfaces:action/MoveX.idl",
+    "/home/abdulrahman/MIA/GROUP_12/src/build/maze_interfaces/rosidl_adapter/maze_interfaces:action/Yaw.idl",
+    "/home/abdulrahman/MIA/GROUP_12/src/build/maze_interfaces/rosidl_adapter/maze_interfaces:srv/Error.idl"
+  ],
+  "include_paths": [
+    "service_msgs:/opt/ros/jazzy/share/service_msgs",
+    "builtin_interfaces:/opt/ros/jazzy/share/builtin_interfaces",
+    "action_msgs:/opt/ros/jazzy/share/action_msgs",
+    "unique_identifier_msgs:/opt/ros/jazzy/share/unique_identifier_msgs"
+  ]
+}

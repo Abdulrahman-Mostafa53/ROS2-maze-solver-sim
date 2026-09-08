@@ -1,0 +1,11 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/maze_interfaces_s__rosidl_typesupport_c.dir/rosidl_generator_py/maze_interfaces/_maze_interfaces_s.ep.rosidl_typesupport_c.c.o"
+  "CMakeFiles/maze_interfaces_s__rosidl_typesupport_c.dir/rosidl_generator_py/maze_interfaces/_maze_interfaces_s.ep.rosidl_typesupport_c.c.o.d"
+  "rosidl_generator_py/maze_interfaces/maze_interfaces_s__rosidl_typesupport_c.pdb"
+  "rosidl_generator_py/maze_interfaces/maze_interfaces_s__rosidl_typesupport_c.so"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/maze_interfaces_s__rosidl_typesupport_c.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

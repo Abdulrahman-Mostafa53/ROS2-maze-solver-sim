@@ -10,7 +10,7 @@ from geometry_msgs.msg import Pose
 from maze_interfaces.action import Yaw
 from maze_interfaces.srv import Error
 from tf_transformations import euler_from_quaternion
-from pid import pid
+from maze_solver.pid import Pid
 
 class MoveYawActionServer(Node):
 
@@ -53,9 +53,9 @@ class MoveYawActionServer(Node):
         )
         
         self.get_logger().info('MoveYaw MultiThreaded Action Server & Stop Robot Service initialized.')
-
+        self.target_angle_rad= math.pi / 2
         #creating a pid yaw object 
-        self.yaw_pid = pid(target =  self.target_angle_rad, kp=0.0, ki=0.0, kd=0.0,anti_wind_clamp=1e+8,controller_clamp = 1e+8,thres=0.0000001)
+        self.yaw_pid = Pid(target =  self.target_angle_rad, kp=0.5, ki=0.4, kd=0.08,anti_wind_clamp=200,controller_clamp = 200,thres=0.01)
 
     def execute_stop(self):
         zero_angular_velocity = Twist()

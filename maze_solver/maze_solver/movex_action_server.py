@@ -9,7 +9,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from maze_interfaces.action import MoveX
 from maze_interfaces.srv import Error
-from pid import Pid
+from maze_solver.pid import Pid
 
 class MoveXActionServer(Node):
 
@@ -59,7 +59,8 @@ class MoveXActionServer(Node):
         self.get_logger().info('MoveX MultiThreaded Action Server initialized.')
 
         #creating movex PID object
-        movex_pid = Pid(target = self.movex.TARGET, kp=0.0, ki=0.0, kd=0.0,anti_wind_clamp=1e+8,controller_clamp = 1e+8,thres=0.0000001)
+        self.movex_target = 15
+        movex_pid = Pid(target = self.movex_target, kp=0.0, ki=0.0, kd=0.0,anti_wind_clamp=1e+8,controller_clamp = 1e+8,thres=0.0000001)
 
     def execute_stop(self):
         twist = Twist()
@@ -89,7 +90,7 @@ class MoveXActionServer(Node):
         self.get_logger().info('Executing goal: Moving forward...')
         
         target_distance = goal_handle.request.target_distance
-        self.movex.TARGET = target_distance
+        self.movex_target = target_distance
         # speed = 0.8
         
         start_x = self.current_x
