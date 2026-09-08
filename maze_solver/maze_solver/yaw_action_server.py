@@ -138,7 +138,7 @@ class MoveYawActionServer(Node):
         q = msg.orientation
         quaternion = [q.x,q.y,q.z,q.w]
         self.current_yaw = euler_from_quaternion(quaternion)[2]
-        self.get_logger().info(f"Current yaw : {self.current_yaw * (180/math.pi)}")
+        # self.get_logger().info(f"Current yaw : {self.current_yaw * (180/math.pi)}")
 
     def normalize_angle(self, angle):
         return math.atan2(math.sin(angle), math.cos(angle))

@@ -1,3 +1,0 @@
-[console_scripts]
-maze_timer_node = maze_control.maze_timer_node:main
-wall_retraction_service = maze_control.wall_retraction_service:main

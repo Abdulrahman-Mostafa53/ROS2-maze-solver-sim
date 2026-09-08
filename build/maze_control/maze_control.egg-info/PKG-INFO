@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: maze-control
-Version: 0.1.0
-Summary: Maze simulation with retractable walls for ROS 2 Jazzy + Gazebo Harmonic
-Maintainer: ali
-Maintainer-email: aliahmedalimohamed2222@gmail.com
-License: Apache-2.0

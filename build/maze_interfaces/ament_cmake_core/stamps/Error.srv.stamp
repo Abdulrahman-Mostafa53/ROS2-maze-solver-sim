@@ -1,7 +1,0 @@
-#request
-bool stop
-
----
-#response
-bool success
-string message

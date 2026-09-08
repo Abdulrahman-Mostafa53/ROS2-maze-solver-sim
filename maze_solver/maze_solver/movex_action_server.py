@@ -23,9 +23,9 @@ class MoveXActionServer(Node):
         # Use ReentrantCallbackGroup to allow concurrent execution of callbacks and actions
         self.callback_group = ReentrantCallbackGroup()
 
-        self.declare_parameter('heading_kp', 1.0)
-        self.declare_parameter('heading_ki', 0.0)
-        self.declare_parameter('heading_kd', 0.0)
+        self.declare_parameter('heading_kp', 2.0)
+        self.declare_parameter('heading_ki', 0.05)
+        self.declare_parameter('heading_kd', 0.03)
         self.declare_parameter('heading_controller_clamp', 1.0)
 
         self.add_on_set_parameters_callback(self.parameter_callback)
@@ -124,7 +124,8 @@ class MoveXActionServer(Node):
         q = msg.orientation
         quaternion = [q.x, q.y, q.z, q.w]
         self.current_yaw = euler_from_quaternion(quaternion)[2]
-
+        
+ 
     def execute_callback(self, goal_handle):
         previous_time = self.get_clock().now()
         self.get_logger().info('Executing goal: Moving forward...')
@@ -146,6 +147,7 @@ class MoveXActionServer(Node):
         # max time 
         TimeOut_duration=15.0
         while rclpy.ok() and (distance_traveled < target_distance):
+            self.get_logger().info(f"distance traveled : {distance_traveled}")
             result = MoveX.Result()
             # Read continuously updated coordinates safely in parallel
             current_time = self.get_clock().now()
@@ -176,9 +178,9 @@ class MoveXActionServer(Node):
             distance_traveled = math.sqrt((self.current_x - start_x) ** 2 + (self.current_y - start_y) ** 2)
 
             heading_error = self.normalize_angle(self.current_yaw - start_yaw)
-            angular_velocity =self.heading_pid.compute(heading_error,dt)
-            twist.linear.x = speed
-            twist.angular.z = angular_velocity
+            angular_velocity =self.heading_pid.compute(heading_error)
+            twist.linear.x = float(speed)
+            twist.angular.z = float(angular_velocity)
 
             feedback_msg.current_distance_traveled = distance_traveled
             goal_handle.publish_feedback(feedback_msg)
