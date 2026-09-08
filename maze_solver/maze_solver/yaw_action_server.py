@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionServer
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rcl_interfaces.msg import SetParametersResult
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose
@@ -18,6 +19,13 @@ class MoveYawActionServer(Node):
         super().__init__('move_yaw_action_server')
 
         self.callback_group = ReentrantCallbackGroup()
+
+        self.declare_parameter('yaw_kp', 1.0)
+        self.declare_parameter('yaw_ki', 0.8)
+        self.declare_parameter('yaw_kd', 0.01)
+        self.declare_parameter('yaw_controller_clamp', 1.0)
+
+        self.add_on_set_parameters_callback(self.parameter_callback)
 
         self._action_server = ActionServer(
             self,
@@ -54,8 +62,16 @@ class MoveYawActionServer(Node):
         
         self.get_logger().info('MoveYaw MultiThreaded Action Server & Stop Robot Service initialized.')
         self.target_angle_rad= math.pi / 2
-        #creating a pid yaw object 
-        self.yaw_pid = Pid(target =  self.target_angle_rad, kp=0.5, ki=0.4, kd=0.08,anti_wind_clamp=200,controller_clamp = 200,thres=0.01)
+        #creating a pid yaw object
+        self.yaw_pid = Pid(
+            target=self.target_angle_rad,
+            kp=1.5,
+            ki=0.005,
+            kd=0.01,
+            controller_clamp=10,
+            thres=0.005,
+            anti_wind_clamp=20
+        )
 
     def execute_stop(self):
         zero_angular_velocity = Twist()
@@ -102,11 +118,27 @@ class MoveYawActionServer(Node):
 
         return response
 
+
+    def parameter_callback(self, params):
+        for param in params:
+            if param.name in [
+                'yaw_kp',
+                'yaw_ki',
+                'yaw_kd',
+                'yaw_controller_clamp'
+            ]:
+                if param.value < 0.0:
+                    return SetParametersResult(
+                        successful=False,
+                        reason=f'{param.name} cannot be negative'
+                    )
+        return SetParametersResult(successful=True)
+    
     def odom_callback(self, msg):
         q = msg.orientation
         quaternion = [q.x,q.y,q.z,q.w]
         self.current_yaw = euler_from_quaternion(quaternion)[2]
-        self.get_logger().info(f"Current yaw : {self.current_yaw}")
+        self.get_logger().info(f"Current yaw : {self.current_yaw * (180/math.pi)}")
 
     def normalize_angle(self, angle):
         return math.atan2(math.sin(angle), math.cos(angle))
@@ -144,6 +176,7 @@ class MoveYawActionServer(Node):
 
             #computing the final PID anuglar speed 
             output = self.yaw_pid.compute(self.current_yaw)
+            print(output, " pop")
 
             #desciding which way to rotate
             if direction == 'left':
@@ -154,8 +187,8 @@ class MoveYawActionServer(Node):
 
             feedback_msg = Yaw.Feedback()
             angular_twist = Twist()
-            angular_twist.angular.z = angular_speed
-            feedback_msg.current_yaw = self.current_yaw
+            angular_twist.angular.z = float(angular_speed)
+            feedback_msg.current_yaw = float(self.current_yaw)
 
             goal_handle.publish_feedback(feedback_msg)
 
