@@ -10,6 +10,7 @@ from geometry_msgs.msg import Pose
 from maze_interfaces.action import Yaw
 from maze_interfaces.srv import Error
 from tf_transformations import euler_from_quaternion
+from std_msgs.msg import Float64MultiArray
 
 
 class MoveYawActionServer(Node):
@@ -38,6 +39,12 @@ class MoveYawActionServer(Node):
             '/robot/ground_truth_pose',
             self.odom_callback,
             10,
+        )
+
+        self.plot_values_publisher = Node.create_publisher(
+            Float64MultiArray,
+            'plot_data',
+            10
         )
 
         self.current_yaw = 0.0
