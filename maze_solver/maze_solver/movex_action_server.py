@@ -9,7 +9,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from maze_interfaces.action import MoveX
 from maze_interfaces.srv import Error
-
+from pid import Pid
 
 class MoveXActionServer(Node):
 
@@ -58,6 +58,9 @@ class MoveXActionServer(Node):
         
         self.get_logger().info('MoveX MultiThreaded Action Server initialized.')
 
+        #creating movex PID object
+        movex_pid = Pid(target = self.movex.TARGET, kp=0.0, ki=0.0, kd=0.0,anti_wind_clamp=1e+8,controller_clamp = 1e+8,thres=0.0000001)
+
     def execute_stop(self):
         twist = Twist()
         twist.linear.x = 0.0
@@ -85,16 +88,13 @@ class MoveXActionServer(Node):
     def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal: Moving forward...')
         
-        target_distance = goal_handle.request.target_distance    
-        speed = 0.8
+        target_distance = goal_handle.request.target_distance
+        self.movex.TARGET = target_distance
+        # speed = 0.8
         
         start_x = self.current_x
         start_y = self.current_y
-        
-        feedback_msg = MoveX.Feedback()
-        twist = Twist()
-        twist.linear.x = speed
-        twist.angular.z = 0.0
+    
 
         distance_traveled = 0.0
 
@@ -105,6 +105,17 @@ class MoveXActionServer(Node):
             result = MoveX.Result()
             # Read continuously updated coordinates safely in parallel
             current_time = self.get_clock().now()
+
+            #comput the final PID linear velocity
+            output = self.movex.pid.compute(start_x)
+        
+            feedback_msg = MoveX.Feedback()
+            twist = Twist()
+            # store feedback from the computed velocity 
+            twist.linear.x = output
+            twist.angular.z = 0.0
+
+
 
             #### EDGE CASE "MISSING /odm "
             last_time_odm_Msg=(current_time - self.last_odm_time).nanoseconds/1e9 #convert to sec

@@ -10,7 +10,7 @@ from geometry_msgs.msg import Pose
 from maze_interfaces.action import Yaw
 from maze_interfaces.srv import Error
 from tf_transformations import euler_from_quaternion
-
+from pid import pid
 
 class MoveYawActionServer(Node):
 
@@ -53,6 +53,9 @@ class MoveYawActionServer(Node):
         )
         
         self.get_logger().info('MoveYaw MultiThreaded Action Server & Stop Robot Service initialized.')
+
+        #creating a pid yaw object 
+        self.yaw_pid = pid(target =  self.target_angle_rad, kp=0.0, ki=0.0, kd=0.0,anti_wind_clamp=1e+8,controller_clamp = 1e+8,thres=0.0000001)
 
     def execute_stop(self):
         zero_angular_velocity = Twist()
@@ -102,7 +105,7 @@ class MoveYawActionServer(Node):
     def odom_callback(self, msg):
         q = msg.orientation
         quaternion = [q.x,q.y,q.z,q.w]
-        self.current_yaw = euler_from_quaternion(quaternion)[2]*(180/math.pi)
+        self.current_yaw = euler_from_quaternion(quaternion)[2]
         self.get_logger().info(f"Current yaw : {self.current_yaw}")
 
     def normalize_angle(self, angle):
@@ -126,24 +129,34 @@ class MoveYawActionServer(Node):
         self.start_yaw_goal = self.current_yaw
 
         target_angle_rad = (math.pi / 2.0)
-        base_speed = 1.5
-        
-        if direction == 'left':
-            angular_speed = base_speed
-        else:
-            angular_speed = -base_speed
+        # base_speed = 1.5
 
-        feedback_msg = Yaw.Feedback()
-        angular_twist = Twist()
-        angular_twist.angular.z = angular_speed
+        # if direction == 'left':
+        #     angular_speed =  base_speed
+        # else:
+        #     angular_speed = -base_speed
 
         angle_traveled = 0.0
 
-        while rclpy.ok() and self.is_executing_goal and (abs(angle_traveled) < target_angle_rad):
-            yaw_diff = self.current_yaw - self.start_yaw_goal
-            angle_traveled = self.normalize_angle(yaw_diff)
+        while rclpy.ok() and self.is_executing_goal:
+            # yaw_diff = self.current_yaw - self.start_yaw_goal
+            # angle_traveled = self.normalize_angle(yaw_diff)
 
+            #computing the final PID anuglar speed 
+            output = self.yaw_pid.compute(self.current_yaw)
+
+            #desciding which way to rotate
+            if direction == 'left':
+                angular_speed = output
+            else:
+                 angular_speed = - output
+            
+
+            feedback_msg = Yaw.Feedback()
+            angular_twist = Twist()
+            angular_twist.angular.z = angular_speed
             feedback_msg.current_yaw = self.current_yaw
+
             goal_handle.publish_feedback(feedback_msg)
 
             if goal_handle.is_cancel_requested:
@@ -156,7 +169,7 @@ class MoveYawActionServer(Node):
                 result.final_direction = "canceled_" + direction
                 return result
 
-            angular_twist.angular.z = angular_speed
+            # angular_twist.angular.z = angular_speed
             self.publisher_.publish(angular_twist)
             time.sleep(0.05)
 
