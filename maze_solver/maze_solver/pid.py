@@ -1,4 +1,5 @@
 import math
+import time
 
 class Pid:
     def __init__(self,target, kp, ki, kd,anti_wind_clamp=1e+8,controller_clamp = 1e+8,thres=0.0000001, start=0):
@@ -31,11 +32,14 @@ class Pid:
         self.__current_state = start
         self.__error = target - start
         self.__accum_error = 0
+
+        # timming propertie
+        self.time = time.perf_counter()
         
     def get_error(self):
         return self.__error
     
-    def compute(self,current_state,dt):
+    def compute(self,current_state):
         # this function calculates the output signal
         # if you have done the setup we discussed earlier all you have to provide now is :
         # error_dif : this is the change in error in some time dt 
@@ -46,11 +50,19 @@ class Pid:
         # by some time don't live it up to cpu power!) you can define dt as time between two
         # iterations 
 
+        # setup time 
+        current_time = time.perf_counter()
+        dt = current_time - self.time
+        self.time = current_time
+        print(dt,"cutteeeeeee dt")
+        
+
         e1 = self.__error
         current_error = self.TARGET - current_state
         error_dif = current_error - self.__error
         self.__error = current_error
         self.__accum_error += self.__error
+        print(self.__accum_error ," acccc")
 
 
 
