@@ -99,3 +99,27 @@ class Pid:
         # if p + i + d is less than the user specified clamp return it 
         # otherwise return clamp value
         return min(p+i+d,self.__controller_clamp)
+
+    def set_kp(self, kp):
+        self.KP = kp
+
+    def set_ki(self, ki):
+        self.KI = ki
+
+    def set_kd(self, kd):
+        self.KD = kd
+
+    def set_anti_wind_clamp(self, clamp):
+        self.anti_wind_clamp = clamp
+
+    def set_controller_clamp(self, clamp):
+        self.controller_clamp = clamp
+
+    def set_target(self,target):
+        self.TARGET = target
+
+    def set_error(self,error):
+        self.__error = error
+
+    def get_error(self):
+        return self.__error

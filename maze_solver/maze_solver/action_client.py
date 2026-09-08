@@ -173,10 +173,20 @@ def solve_maze():
     sleep(1)
 
     motion_node = MazeSolver()
-    # motion_node.move_yaw("left")
-    # sleep(3)
-    motion_node.move_x(float(3.0))
-    sleep(2)
+    motion_node.move_yaw("left")
+    sleep(8)
+    motion_node.move_x(float(1))
+    sleep(3)
+    wall_node.toggle_walls(False)
+    sleep(1)
+    motion_node.move_x(float(1))
+    sleep(3)
+    motion_node.move_yaw("right")
+    sleep(4)
+    motion_node.move_x(float(8.0))
+    sleep(10)
+
+    
     wall_node.toggle_walls(False)
     motion_node.move_x(float(1.0))
 

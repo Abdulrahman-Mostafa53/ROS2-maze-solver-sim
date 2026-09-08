@@ -65,9 +65,9 @@ class MoveYawActionServer(Node):
         #creating a pid yaw object
         self.yaw_pid = Pid(
             target=self.target_angle_rad,
-            kp=1.5,
-            ki=0.005,
-            kd=0.01,
+            kp=1.3,
+            ki=0.009,
+            kd=0.005,
             controller_clamp=10,
             thres=0.005,
             anti_wind_clamp=20
@@ -161,28 +161,31 @@ class MoveYawActionServer(Node):
         self.start_yaw_goal = self.current_yaw
 
         target_angle_rad = (math.pi / 2.0)
-        # base_speed = 1.5
+        base_speed = 1.5
 
-        # if direction == 'left':
-        #     angular_speed =  base_speed
-        # else:
-        #     angular_speed = -base_speed
+        if direction == 'left':
+            angular_speed =  base_speed
+        else:
+            angular_speed = 0
+            self.yaw_pid.set_target(0)
+
+        self.get_logger().info(f" THE TARGET hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh = {self.yaw_pid.TARGET}")
+        self.yaw_pid.set_error(math.pi/2)
+        self.get_logger().info(f" error = {self.yaw_pid.get_error()}")
 
         angle_traveled = 0.0
 
-        while rclpy.ok() and self.is_executing_goal:
+        while rclpy.ok() and self.is_executing_goal and abs(self.yaw_pid.get_error())>0.02:
             # yaw_diff = self.current_yaw - self.start_yaw_goal
             # angle_traveled = self.normalize_angle(yaw_diff)
 
             #computing the final PID anuglar speed 
             output = self.yaw_pid.compute(self.current_yaw)
+            self.get_logger().info(f" pideeee  = {self.yaw_pid.TARGET} , current : {self.current_yaw}")
+  
             print(output, " pop")
 
-            #desciding which way to rotate
-            if direction == 'left':
-                angular_speed = output
-            else:
-                 angular_speed = - output
+            angular_speed = output
             
 
             feedback_msg = Yaw.Feedback()

@@ -23,10 +23,15 @@ class MoveXActionServer(Node):
         # Use ReentrantCallbackGroup to allow concurrent execution of callbacks and actions
         self.callback_group = ReentrantCallbackGroup()
 
-        self.declare_parameter('heading_kp', 2.0)
-        self.declare_parameter('heading_ki', 0.05)
-        self.declare_parameter('heading_kd', 0.03)
-        self.declare_parameter('heading_controller_clamp', 1.0)
+        self.declare_parameter('heading_kp', 10.0)
+        self.declare_parameter('heading_ki', 0.03)
+        self.declare_parameter('heading_kd', 0.02)
+        self.declare_parameter('heading_controller_clamp', 1000.0)
+
+        self.declare_parameter('movex_kp', 10.0)
+        self.declare_parameter('movex_ki', 0.03)
+        self.declare_parameter('movex_kd', 0.02)
+        self.declare_parameter('movex_controller_clamp', 1000.0)
 
         self.add_on_set_parameters_callback(self.parameter_callback)
 
@@ -54,6 +59,7 @@ class MoveXActionServer(Node):
             10,
             callback_group=self.callback_group
         )
+        self.target_angle_rad = 0.0
 
         # Variables to track position
         self.current_x = 0.0
@@ -66,18 +72,28 @@ class MoveXActionServer(Node):
             self.stop_robot_callback,
             callback_group=self.callback_group
         )
-
+        
+        self.get_logger().info('MoveX MultiThreaded Action Server initialized. weeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+                
         self.heading_pid = Pid(
             target=0.0,
-            kp=self.get_parameter('heading_kp').value,
-            ki=self.get_parameter('heading_ki').value,
-            kd=self.get_parameter('heading_kd').value,
+            kp=0,
+            ki=0,
+            kd=0,
             controller_clamp=self.get_parameter(
                 'heading_controller_clamp'
             ).value
         )
-        
-        self.get_logger().info('MoveX MultiThreaded Action Server initialized.')
+
+        self.movex_pid = Pid(
+            target=self.target_angle_rad,
+            kp=2.5,
+            ki=0.05,
+            kd=0.01,
+            controller_clamp=1000,
+            thres=0.005,
+            anti_wind_clamp=2000
+        )
 
     def execute_stop(self):
         twist = Twist()
@@ -124,19 +140,21 @@ class MoveXActionServer(Node):
         q = msg.orientation
         quaternion = [q.x, q.y, q.z, q.w]
         self.current_yaw = euler_from_quaternion(quaternion)[2]
-        
- 
+
     def execute_callback(self, goal_handle):
+
         previous_time = self.get_clock().now()
         self.get_logger().info('Executing goal: Moving forward...')
         
-        target_distance = goal_handle.request.target_distance    
-        speed = 0.8
+        target_distance = goal_handle.request.target_distance   
+        self.movex_pid.set_target(target_distance) 
+        self.heading_pid.set_target(math.pi/2)
+
         
         start_x = self.current_x
         start_y = self.current_y
         start_yaw = self.current_yaw
-        
+
         
         feedback_msg = MoveX.Feedback()
         twist = Twist()
@@ -147,11 +165,10 @@ class MoveXActionServer(Node):
         # max time 
         TimeOut_duration=15.0
         while rclpy.ok() and (distance_traveled < target_distance):
-            self.get_logger().info(f"distance traveled : {distance_traveled}")
+            # self.get_logger().info(f"current_dis : {distance_traveled}")
             result = MoveX.Result()
             # Read continuously updated coordinates safely in parallel
             current_time = self.get_clock().now()
-            dt = (current_time - previous_time).nanoseconds / 1e9
             previous_time = current_time
 
             #### EDGE CASE "MISSING /pose "
@@ -161,7 +178,7 @@ class MoveXActionServer(Node):
                self.execute_stop()
                # change status of goal
                goal_handle.abort()
-       
+               
                result.success = False
                result.final_distance = distance_traveled
                return result
@@ -178,9 +195,15 @@ class MoveXActionServer(Node):
             distance_traveled = math.sqrt((self.current_x - start_x) ** 2 + (self.current_y - start_y) ** 2)
 
             heading_error = self.normalize_angle(self.current_yaw - start_yaw)
-            angular_velocity =self.heading_pid.compute(heading_error)
-            twist.linear.x = float(speed)
-            twist.angular.z = float(angular_velocity)
+            angular_velocity = self.heading_pid.compute(heading_error)
+
+            move_x_out = self.movex_pid.compute(distance_traveled)
+            
+          
+
+
+            twist.linear.x = float(move_x_out)
+            # twist.angular.z = float(angular_velocity)
 
             feedback_msg.current_distance_traveled = distance_traveled
             goal_handle.publish_feedback(feedback_msg)
